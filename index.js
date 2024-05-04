@@ -4,23 +4,38 @@ const cheerio = require('cheerio');
 const express = require('express');
 
 const app = express();
+const url = "https://www.timeanddate.com/worldclock/"
 
-const url = "https://www.theguardian.com/uk"
+const fetchWebsite = () => {
+    axios(url)
+        .then(response => {
+            const html = response.data
+            const $ = cheerio.load(html)
+            const articles = []
 
-axios(url)
-    .then(response => {
-        const html = response.data
-        const $ = cheerio.load(html)
-        const articles = []
+            // $('.my-city__city', html).each(function () {
+            //     const city = $(this).text()
+            //     // const url = $(this).find('a').attr('href')
+            //     articles.push({
+            //         city
+            //     })
+            // })
 
-        $('.dcr-yyvovz', html).each(function() {
-            const title = $(this).text()
-            // const url = $(this).find('a').attr('href')
+            // $('.my-city__seconds', html).each(function() {
+            //     const seconds = $(this).text()
+            //     articles.push({
+            //         seconds
+            //     })
+            // })
+            const seconds = $('.my-city__seconds', html).first().text();
             articles.push({
-                title
-            })
-        })
-        console.log(articles)
-    }).catch(err => console.log(err))
+                seconds
+            });
+            console.log(articles)
+        }).catch(err => console.log(err))
+}
 
-app.listen(PORT, () => console.log(`server running on PORT ${PORT} `) )
+// 執行 fetchWebsite 函數每 1 秒
+setInterval(fetchWebsite, 1000);
+
+app.listen(PORT, () => console.log(`server running on PORT ${PORT} `))
