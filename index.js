@@ -2,9 +2,19 @@ const PORT = 8000
 const axios = require('axios');
 const cheerio = require('cheerio');
 const express = require('express');
+const nodemailer = require('nodemailer');
 
 const app = express();
 const url = "https://www.timeanddate.com/worldclock/"
+
+// 建立一個 transporter 物件，用於發送郵件
+let transporter = nodemailer.createTransport({
+    service: 'gmail', // 使用 Gmail 服務
+    auth: {
+        user: 'successken2001@gmail.com', // 你的 Gmail 帳號
+        pass: process.env.PASSWORD // 你的 Gmail 密碼
+    }
+});
 
 const fetchWebsite = () => {
     axios(url)
@@ -21,16 +31,29 @@ const fetchWebsite = () => {
             //     })
             // })
 
-            // $('.my-city__seconds', html).each(function() {
-            //     const seconds = $(this).text()
-            //     articles.push({
-            //         seconds
-            //     })
-            // })
             const seconds = $('.my-city__seconds', html).first().text();
             articles.push({
                 seconds
             });
+
+            // 如果 seconds 為 10，則發送郵件
+            if (seconds === '10' || seconds === '30' || seconds === '50') {
+                let mailOptions = {
+                    from: process.env.EMAIL, // 發送者的郵件地址
+                    to: 'imeukg2001@gmail.com', // 接收者的郵件地址
+                    subject: 'Seconds is 10', // 郵件主題
+                    text: 'The seconds value is 10.' // 郵件內容
+                };
+
+                transporter.sendMail(mailOptions, function(error, info){
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        console.log('Email sent: ' + info.response);
+                    }
+                });
+            }
+
             console.log(articles)
         }).catch(err => console.log(err))
 }
